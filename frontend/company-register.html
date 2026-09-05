@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register Your Company - VendorCheck AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans text-white flex items-center justify-center p-6">
+
+  <div class="fade-up w-full max-w-md rounded-2xl p-10 text-center border border-slate-500/20 bg-slate-800/75 backdrop-blur-md" style="box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+    <div class="flex justify-center mb-3">
+      <svg viewBox="0 0 100 100" width="50" height="50">
+        <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#2563eb"/>
+        <path d="M30 50 L45 65 L72 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-bold mb-1">Register Your Company</h2>
+    <p class="text-slate-400 text-xs mb-6">Get access to VendorCheck AI for your HR &amp; Procurement teams</p>
+
+    <form id="registerForm" class="space-y-3 text-left">
+      <div>
+        <label class="text-xs text-slate-400">Company Name</label>
+        <input type="text" id="companyName" required
+          class="w-full mt-1 px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400">Contact Email</label>
+        <input type="email" id="contactEmail" required
+          class="w-full mt-1 px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400">Password (min. 8 characters)</label>
+        <input type="password" id="password" required minlength="8"
+          class="w-full mt-1 px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400">Confirm Password</label>
+        <input type="password" id="confirmPassword" required minlength="8"
+          class="w-full mt-1 px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      </div>
+
+      <button type="submit" id="registerBtn"
+        class="w-full py-3 mt-2 rounded-lg font-semibold tracking-wide bg-gradient-to-br from-blue-600 to-blue-700 hover:-translate-y-0.5 active:scale-95 transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+        <span id="registerBtnText">Register Company</span>
+      </button>
+    </form>
+
+    <p id="statusMsg" class="text-xs mt-3 min-h-[16px]"></p>
+
+    <p class="text-xs text-slate-500 mt-5">
+      Already registered? <a href="company-login.html" class="text-blue-400 hover:underline">Log in to your portal</a>
+    </p>
+  </div>
+
+  <script>
+    function spinnerHTML() {
+      return `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M21 12a9 9 0 00-9-9"/></svg>`;
+    }
+
+    document.getElementById("registerForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const companyName = document.getElementById("companyName").value;
+      const contactEmail = document.getElementById("contactEmail").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const statusMsg = document.getElementById("statusMsg");
+      const btn = document.getElementById("registerBtn");
+      const btnText = document.getElementById("registerBtnText");
+
+      statusMsg.className = "text-xs mt-3 min-h-[16px]";
+      statusMsg.innerText = "";
+
+      if (password !== confirmPassword) {
+        statusMsg.className = "text-xs mt-3 min-h-[16px] text-red-400";
+        statusMsg.innerText = "Passwords do not match.";
+        return;
+      }
+
+      btn.disabled = true;
+      btnText.innerHTML = spinnerHTML() + " Registering...";
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/companies/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            company_name: companyName,
+            contact_email: contactEmail,
+            password: password
+          })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          statusMsg.className = "text-xs mt-3 min-h-[16px] text-emerald-400";
+          statusMsg.innerText = `Registered! Your company code is ${data.company_code}. Redirecting to login...`;
+          setTimeout(() => window.location.href = "company-login.html", 2000);
+        } else {
+          statusMsg.className = "text-xs mt-3 min-h-[16px] text-red-400";
+          statusMsg.innerText = data.detail || "Registration failed.";
+        }
+      } catch (err) {
+        statusMsg.className = "text-xs mt-3 min-h-[16px] text-red-400";
+        statusMsg.innerText = "Cannot connect to server.";
+      } finally {
+        btn.disabled = false;
+        btnText.innerText = "Register Company";
+      }
+    });
+  </script>
+</body>
+</html>

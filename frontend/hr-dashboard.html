@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HR Dashboard - VendorCheck AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes progressMove {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+    .progress-bar-fill {
+      animation: progressMove 1.2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans text-white">
+
+  <div class="h-1 bg-gradient-to-r from-teal-500 via-indigo-500 to-amber-500"></div>
+
+  <!-- Top Navbar -->
+  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-10 py-6 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <svg viewBox="0 0 100 100" width="48" height="48">
+        <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#2dd4bf"/>
+        <path d="M30 50 L45 65 L72 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1 class="font-bold text-2xl leading-tight">VendorCheck AI</h1>
+        <p class="text-base text-slate-400 leading-tight">HR Officer Dashboard</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-5">
+      <div class="text-right">
+        <p class="text-lg font-medium" id="welcomeMsg"></p>
+        <p class="text-sm text-slate-400">HR Officer</p>
+      </div>
+      <div class="w-14 h-14 rounded-full bg-teal-600 flex items-center justify-center font-bold text-xl" id="avatarInitial"></div>
+      <a href="my-sent-emails.html" title="My Sent Emails"
+        class="w-14 h-14 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+      </a>
+      <button id="logoutBtn" title="Logout"
+        class="w-14 h-14 rounded-full bg-slate-700 hover:bg-red-600 flex items-center justify-center transition">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="w-full px-8 py-12">
+    <div class="grid md:grid-cols-3 gap-8 items-start w-full max-w-[1900px] mx-auto">
+
+      <!-- Upload Card -->
+      <div class="fade-up bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-10 shadow-xl">
+        <div class="flex items-center gap-4 mb-7">
+          <div class="w-14 h-14 rounded-xl bg-teal-600/20 flex items-center justify-center flex-shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <div>
+            <h2 class="font-semibold text-xl">Candidate Verification</h2>
+            <p class="text-sm text-slate-400">Upload CV to begin</p>
+          </div>
+        </div>
+
+        <form id="cvForm" class="space-y-4">
+          <input type="text" id="candidateName" placeholder="Candidate Name" required
+            class="w-full px-5 py-3.5 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-slate-700 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/15 transition text-base">
+
+          <label class="flex flex-col items-center justify-center gap-3 w-full px-4 py-10 rounded-lg border-2 border-dashed border-slate-600 hover:border-teal-500 cursor-pointer transition bg-slate-900/30 text-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            <span class="text-sm text-slate-400" id="fileLabel">Choose PDF/Image</span>
+            <input type="file" id="cvFile" accept=".pdf,.png,.jpg,.jpeg" required class="hidden">
+          </label>
+
+          <button type="submit" id="uploadBtn"
+            class="w-full py-4 rounded-lg font-semibold text-base bg-gradient-to-br from-teal-600 to-teal-700 hover:-translate-y-0.5 active:scale-95 transition shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2">
+            <span id="uploadBtnText">Upload CV</span>
+          </button>
+        </form>
+
+        <div id="uploadStatus" class="mt-5"></div>
+      </div>
+
+      <!-- Verify Card -->
+      <div class="fade-up bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-10 shadow-xl" style="animation-delay: 0.1s; opacity:0;">
+        <div class="flex items-center gap-4 mb-7">
+          <div class="w-14 h-14 rounded-xl bg-indigo-600/20 flex items-center justify-center flex-shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <h2 class="font-semibold text-xl">Verify a Claim</h2>
+            <p class="text-sm text-slate-400">AI evidence cross-check</p>
+          </div>
+        </div>
+
+        <form id="verifyForm" class="space-y-4">
+          <textarea id="claimText" rows="5" placeholder="e.g. Candidate worked as Software Engineer for 5 years" required
+            class="w-full px-5 py-3.5 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 transition resize-none text-base"></textarea>
+          <button type="submit" id="verifyBtn"
+            class="w-full py-4 rounded-lg font-semibold text-base bg-gradient-to-br from-indigo-600 to-indigo-700 hover:-translate-y-0.5 active:scale-95 transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+            <span id="verifyBtnText">Verify Claim</span>
+          </button>
+        </form>
+
+        <div id="verifyStatus" class="mt-5"></div>
+      </div>
+
+      <!-- Email/Result Card -->
+      <div class="fade-up bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-10 shadow-xl" style="animation-delay: 0.2s; opacity:0;">
+        <div class="flex items-center gap-4 mb-7">
+          <div class="w-14 h-14 rounded-xl bg-amber-600/20 flex items-center justify-center flex-shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M22 6l-10 7L2 6M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+          </div>
+          <div>
+            <h2 class="font-semibold text-xl">Verification Email</h2>
+            <p class="text-sm text-slate-400">Send with human approval</p>
+          </div>
+        </div>
+
+        <div id="emailCardContent">
+          <div class="flex flex-col items-center justify-center text-center py-16 text-slate-500">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" class="mb-4"><path d="M22 6l-10 7L2 6M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+            <p class="text-sm">Verify a claim first to enable email sending.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const name = localStorage.getItem("userName");
+    const employeeId = localStorage.getItem("userEmployeeId");
+    document.getElementById("welcomeMsg").innerText = name;
+    document.getElementById("avatarInitial").innerText = (name || "?").charAt(0).toUpperCase();
+
+    document.getElementById("logoutBtn").addEventListener("click", async function() {
+      const empId = localStorage.getItem("userEmployeeId");
+      const empName = localStorage.getItem("userName");
+
+      try {
+        await fetch("http://127.0.0.1:8000/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ employee_id: empId, name: empName }),
+          keepalive: true
+        });
+      } catch (err) {
+        console.error("Logout logging failed:", err);
+      }
+
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userEmployeeId");
+      window.location.href = "index.html";
+    });
+
+    const fileInput = document.getElementById("cvFile");
+    fileInput.addEventListener("change", function() {
+      document.getElementById("fileLabel").innerText = fileInput.files[0]
+        ? fileInput.files[0].name
+        : "Choose PDF/Image";
+    });
+
+    function spinnerHTML() {
+      return `<svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M21 12a9 9 0 00-9-9"/></svg>`;
+    }
+
+    function progressBarHTML(label) {
+      return `
+        <div class="flex items-center gap-2 text-sm text-slate-300 mb-2">${spinnerHTML()}<span>${label}</span></div>
+        <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden relative">
+          <div class="progress-bar-fill absolute h-full w-1/4 bg-teal-500 rounded-full"></div>
+        </div>`;
+    }
+
+    document.getElementById("cvForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const candidateName = document.getElementById("candidateName").value;
+      const file = fileInput.files[0];
+      const status = document.getElementById("uploadStatus");
+      const btnText = document.getElementById("uploadBtnText");
+
+      if (!file) {
+        status.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-300">No file selected</div>`;
+        return;
+      }
+
+      btnText.innerHTML = spinnerHTML() + ` Processing...`;
+      btnText.classList.add("flex", "items-center", "gap-2");
+      status.innerHTML = progressBarHTML("Extracting text (OCR) and generating embeddings...");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/upload-cv?candidate_name=${encodeURIComponent(candidateName)}`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await response.json();
+        status.innerHTML = `
+          <div class="flex items-start gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-sm text-emerald-300">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" class="mt-0.5 flex-shrink-0"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Uploaded <b>${data.filename}</b> for <b>${data.candidate}</b> — stored ${data.stored_in_qdrant} chunk(s).</span>
+          </div>`;
+      } catch (err) {
+        status.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-300">Upload failed. Check backend server.</div>`;
+      } finally {
+        btnText.innerText = "Upload CV";
+      }
+    });
+
+    function evidenceHTML(docEvidence, webEvidence) {
+      let html = `<div class="space-y-4 mt-4">`;
+
+      html += `<div class="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+        <p class="text-sm font-semibold text-teal-400 mb-3 flex items-center gap-1">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          Document Evidence
+        </p>`;
+      if (docEvidence.length === 0) {
+        html += `<p class="text-sm text-slate-500">No document evidence found.</p>`;
+      } else {
+        docEvidence.forEach(e => {
+          const pct = Math.round(e.score * 100);
+          html += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0 last:mb-0 last:pb-0">
+            <p class="text-sm text-slate-300 leading-relaxed">${e.text.slice(0, 160)}${e.text.length > 160 ? '...' : ''}</p>
+            <span class="text-xs text-teal-400">Relevance: ${pct}%</span>
+          </div>`;
+        });
+      }
+      html += `</div>`;
+
+      html += `<div class="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+        <p class="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-1">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/></svg>
+          Web Evidence
+        </p>`;
+      if (webEvidence.length === 0) {
+        html += `<p class="text-sm text-slate-500">No web evidence found.</p>`;
+      } else {
+        webEvidence.forEach(w => {
+          html += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0 last:mb-0 last:pb-0">
+            <p class="text-sm font-medium text-slate-200">${w.title || "Untitled"}</p>
+            <p class="text-sm text-slate-400 leading-relaxed">${(w.content || "").slice(0, 120)}...</p>
+            <a href="${w.url}" target="_blank" class="text-xs text-amber-400 hover:underline break-all">${w.url}</a>
+          </div>`;
+        });
+      }
+      html += `</div></div>`;
+
+      return html;
+    }
+
+    function showConfirmModal(message) {
+      return new Promise((resolve) => {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[999]";
+        modal.innerHTML = `
+          <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl" style="animation: fadeUp 0.25s ease;">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              </div>
+              <h3 class="font-semibold text-white">Confirm Action</h3>
+            </div>
+            <p class="text-sm text-slate-300 mb-5">${message}</p>
+            <div class="flex gap-2">
+              <button id="modalCancel" class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-slate-700 hover:bg-slate-600 transition">Cancel</button>
+              <button id="modalConfirm" class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-br from-teal-600 to-teal-700 hover:-translate-y-0.5 transition">Confirm & Send</button>
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector("#modalCancel").onclick = () => { modal.remove(); resolve(false); };
+        modal.querySelector("#modalConfirm").onclick = () => { modal.remove(); resolve(true); };
+      });
+    }
+
+    // ---------------------------------------------------------------------
+    // Verification email flow: officer types company name(s) -> backend
+    // resolves each to an email (registered lookup or web-search + AI) ->
+    // officer reviews/edits the resolved emails -> confirm & send.
+    // ---------------------------------------------------------------------
+
+    function sourceBadge(source) {
+      if (source === "registered") return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Registered</span>`;
+      if (source === "web_search_ai") return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Found via AI search</span>`;
+      return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/20 text-red-300 border border-red-500/30">Not found</span>`;
+    }
+
+    function companyInputStepHTML() {
+      return `
+        <div class="space-y-3 mt-2">
+          <label class="text-xs text-slate-400">Company name(s) to notify — separate with commas</label>
+          <input type="text" id="companyNamesInput" placeholder="e.g. Microsoft, IIUC"
+            class="w-full px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-slate-700 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 transition text-sm">
+          <button id="resolveEmailsBtn" type="button"
+            class="w-full py-3 rounded-lg text-sm font-semibold bg-slate-700 hover:bg-slate-600 transition">
+            Find Contact Emails
+          </button>
+          <p id="resolveStatus" class="text-xs text-slate-500"></p>
+        </div>`;
+    }
+
+    function recipientRowHTML(r, index) {
+      return `
+        <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-3 space-y-2" data-index="${index}">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-slate-200">${r.company_name}</span>
+            ${sourceBadge(r.source)}
+          </div>
+          <input type="email" class="recipient-email-input w-full px-3 py-2 rounded-md bg-slate-950/60 text-sm text-white placeholder-slate-500 border border-slate-700 focus:border-amber-500 focus:outline-none"
+            value="${r.email || ''}" placeholder="Enter email manually if not found">
+        </div>`;
+    }
+
+    async function handleResolveEmails(claim, verdictText, statusLine) {
+      const input = document.getElementById("companyNamesInput");
+      const resolveBtn = document.getElementById("resolveEmailsBtn");
+      const resolveStatus = document.getElementById("resolveStatus");
+
+      const companyNames = input.value.split(",").map(s => s.trim()).filter(Boolean);
+      if (companyNames.length === 0) {
+        resolveStatus.innerHTML = `<span class="text-red-400">Enter at least one company name.</span>`;
+        return;
+      }
+
+      resolveBtn.disabled = true;
+      resolveStatus.innerHTML = `<span class="flex items-center gap-1">${spinnerHTML()} Looking up contact emails...</span>`;
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/resolve-company-emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_names: companyNames })
+        });
+        const data = await response.json();
+        renderResolvedRecipients(data.resolved, claim, verdictText, statusLine);
+      } catch (err) {
+        resolveStatus.innerHTML = `<span class="text-red-400">Lookup failed. Check backend server.</span>`;
+        resolveBtn.disabled = false;
+      }
+    }
+
+    function renderResolvedRecipients(resolved, claim, verdictText, statusLine) {
+      const container = document.getElementById("emailCardContent");
+      const rowsHTML = resolved.map((r, i) => recipientRowHTML(r, i)).join("");
+
+      container.innerHTML = `
+        <div class="space-y-3">
+          <p class="text-xs text-slate-400">Review the emails below — edit any that look wrong, then confirm to send.</p>
+          <div id="recipientsList" class="space-y-2">${rowsHTML}</div>
+          <button id="confirmSendBtn" type="button"
+            class="w-full py-3.5 rounded-lg text-sm font-semibold bg-gradient-to-br from-amber-600 to-amber-700 hover:-translate-y-0.5 transition">
+            Confirm & Send
+          </button>
+          <p id="sendStatus" class="text-sm text-slate-400"></p>
+        </div>`;
+
+      window.__currentResolved = resolved;
+
+      document.getElementById("confirmSendBtn").addEventListener("click", async function() {
+        const confirmed = await showConfirmModal("Are you sure you want to send verification emails to the listed companies? This will be logged in the audit trail.");
+        if (!confirmed) return;
+
+        const rows = document.querySelectorAll("#recipientsList > div");
+        const recipients = [];
+        rows.forEach(row => {
+          const idx = parseInt(row.dataset.index, 10);
+          const emailValue = row.querySelector(".recipient-email-input").value.trim();
+          if (emailValue) {
+            recipients.push({
+              company_name: window.__currentResolved[idx].company_name,
+              company_code: window.__currentResolved[idx].company_code,
+              email: emailValue
+            });
+          }
+        });
+
+        if (recipients.length === 0) {
+          document.getElementById("sendStatus").innerHTML = `<span class="text-red-400">No valid email addresses to send to.</span>`;
+          return;
+        }
+
+        const sendStatus = document.getElementById("sendStatus");
+        sendStatus.innerHTML = `<span class="flex items-center gap-1">${spinnerHTML()} Sending...</span>`;
+
+        try {
+          const response = await fetch("http://127.0.0.1:8000/send-verification-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              recipients: recipients,
+              subject: `Verification Request - ${claim}`,
+              message: `Claim: ${claim}\n\nAI Assessment: ${statusLine}\n${verdictText}`,
+              requested_by: name,
+              employee_id: employeeId,
+              candidate_name: document.getElementById("candidateName").value
+            })
+          });
+          const data = await response.json();
+
+          const summary = data.recipients.map(r =>
+            r.status === "sent"
+              ? `<span class="text-emerald-400">✓ ${r.company_name} (${r.email})</span>`
+              : `<span class="text-red-400">✗ ${r.company_name}: ${r.error || 'failed'}</span>`
+          ).join("<br>");
+
+          sendStatus.innerHTML = summary;
+        } catch (err) {
+          sendStatus.innerHTML = `<span class="text-red-400">Sending failed. Check backend server.</span>`;
+        }
+      });
+    }
+
+    document.getElementById("verifyForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const claim = document.getElementById("claimText").value;
+      const statusDiv = document.getElementById("verifyStatus");
+      const btnText = document.getElementById("verifyBtnText");
+      const emailCard = document.getElementById("emailCardContent");
+
+      btnText.innerHTML = spinnerHTML() + ` Verifying...`;
+      btnText.classList.add("flex", "items-center", "gap-2");
+      statusDiv.innerHTML = progressBarHTML("Searching evidence and consulting AI agent...");
+      emailCard.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-16 text-slate-500">${spinnerHTML()}<p class="text-sm mt-2">Waiting for verification result...</p></div>`;
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/verify-claim?claim=${encodeURIComponent(claim)}&doc_type=cv&requested_by=${encodeURIComponent(name)}`);
+        const data = await response.json();
+
+        const statusLine = data.verification_result.split("\n")[0] || "";
+        const explanation = data.verification_result.split("\n").slice(1).join(" ").replace("EXPLANATION:", "").trim();
+
+        let badgeColor = "bg-slate-500/20 text-slate-300 border-slate-500/30";
+        if (statusLine.includes("Strongly")) badgeColor = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+        else if (statusLine.includes("Partially")) badgeColor = "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
+        else if (statusLine.includes("Not Verified")) badgeColor = "bg-red-500/20 text-red-300 border-red-500/30";
+        else if (statusLine.includes("Unable")) badgeColor = "bg-slate-500/20 text-slate-300 border-slate-500/30";
+
+        statusDiv.innerHTML = `
+          <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-5 space-y-3">
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold border ${badgeColor}">${statusLine.replace("STATUS:", "").trim()}</span>
+            <p class="text-sm text-slate-300 leading-relaxed">${explanation}</p>
+            ${evidenceHTML(data.document_evidence, data.web_evidence)}
+          </div>`;
+
+        emailCard.innerHTML = `
+          <div class="space-y-4">
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold border ${badgeColor} w-fit">${statusLine.replace("STATUS:", "").trim()}</span>
+            <p class="text-sm text-slate-400 leading-relaxed">${explanation}</p>
+            ${companyInputStepHTML()}
+          </div>`;
+
+        document.getElementById("resolveEmailsBtn").addEventListener("click", function() {
+          handleResolveEmails(claim, explanation, statusLine.replace("STATUS:", "").trim());
+        });
+      } catch (err) {
+        statusDiv.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-300">Verification failed. Check backend server.</div>`;
+        emailCard.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-16 text-slate-500"><p class="text-sm">Verification failed.</p></div>`;
+      } finally {
+        btnText.innerText = "Verify Claim";
+      }
+    });
+
+    setTimeout(() => {
+      document.querySelectorAll('.fade-up').forEach(el => el.style.opacity = '1');
+    }, 50);
+  </script>
+</body>
+</html>

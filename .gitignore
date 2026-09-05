@@ -1,0 +1,27 @@
+# Environment variables / secrets
+.env
+*.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Qdrant local vector storage (runtime data, not code)
+backend/qdrant_data/
+
+# Uploaded files (runtime data)
+backend/uploads/
+
+# Audit / runtime JSON logs (contain live data, not code)
+backend/audit_log.json
+backend/email_threads.json
+
+# Node (if any tooling ever added)
+node_modules/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/

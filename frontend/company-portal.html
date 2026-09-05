@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Company Portal - VendorCheck AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.45s ease forwards; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans text-white">
+
+  <div class="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500"></div>
+
+  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-10 py-6 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <svg viewBox="0 0 100 100" width="44" height="44">
+        <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#2563eb"/>
+        <path d="M30 50 L45 65 L72 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1 class="font-bold text-2xl leading-tight">VendorCheck AI</h1>
+        <p class="text-sm text-slate-400 leading-tight" id="companyLabel">Company Portal</p>
+      </div>
+    </div>
+    <button id="logoutBtn" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-red-600 text-sm font-medium transition">Log Out</button>
+  </nav>
+
+  <main class="w-full px-8 py-12 max-w-[1100px] mx-auto space-y-8">
+
+    <!-- Add Employee Card -->
+    <div class="fade-up bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 shadow-xl" style="opacity:0;">
+      <h2 class="font-semibold text-lg mb-4">Add / Update Employee</h2>
+      <form id="addEmployeeForm" class="grid md:grid-cols-4 gap-3">
+        <input type="text" id="empId" placeholder="Employee ID" required
+          class="px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-slate-700 focus:border-blue-600 focus:outline-none text-sm">
+        <input type="text" id="empName" placeholder="Full Name" required
+          class="px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-slate-700 focus:border-blue-600 focus:outline-none text-sm">
+        <select id="empRole" class="px-4 py-3 rounded-lg bg-slate-900/60 text-white border border-slate-700 focus:border-blue-600 focus:outline-none text-sm">
+          <option value="hr">HR</option>
+          <option value="procurement">Procurement</option>
+        </select>
+        <button type="submit" class="px-4 py-3 rounded-lg font-semibold text-sm bg-gradient-to-br from-blue-600 to-blue-700 hover:-translate-y-0.5 transition">
+          Add Employee
+        </button>
+      </form>
+      <p id="addStatus" class="text-xs mt-3 text-slate-400"></p>
+    </div>
+
+    <!-- Employee List Card -->
+    <div class="fade-up bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 shadow-xl" style="animation-delay:0.08s; opacity:0;">
+      <h2 class="font-semibold text-lg mb-4">Your Employees</h2>
+      <div id="employeeList">
+        <div class="flex items-center justify-center py-12 text-slate-500 gap-2">
+          <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
+          <span>Loading employees...</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const apiKey = localStorage.getItem("companyApiKey");
+    const companyCode = localStorage.getItem("companyCode");
+    const companyName = localStorage.getItem("companyName");
+
+    if (!apiKey || !companyCode) {
+      window.location.href = "company-login.html";
+    }
+
+    document.getElementById("companyLabel").innerText = companyName ? `${companyName} — Company Portal` : "Company Portal";
+
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      localStorage.removeItem("companyApiKey");
+      localStorage.removeItem("companyCode");
+      localStorage.removeItem("companyName");
+      window.location.href = "company-login.html";
+    });
+
+    function spinnerHTML() {
+      return `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M21 12a9 9 0 00-9-9"/></svg>`;
+    }
+
+    function roleBadge(role) {
+      const isHr = role === "hr";
+      return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${isHr ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'}">${isHr ? 'HR' : 'Procurement'}</span>`;
+    }
+
+    function statusBadge(active) {
+      return active
+        ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active</span>`
+        : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">Inactive</span>`;
+    }
+
+    async function syncEmployee(employee_id, name, role, active) {
+      return fetch(`http://127.0.0.1:8000/api/v1/companies/${encodeURIComponent(companyCode)}/employees`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey
+        },
+        body: JSON.stringify({ employees: [{ employee_id, name, role, active }] })
+      });
+    }
+
+    async function loadEmployees() {
+      const listEl = document.getElementById("employeeList");
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/companies/me/employees", {
+          headers: { "X-API-Key": apiKey }
+        });
+        if (response.status === 401) {
+          window.location.href = "company-login.html";
+          return;
+        }
+        const data = await response.json();
+        const employees = data.employees || [];
+
+        if (employees.length === 0) {
+          listEl.innerHTML = `<p class="text-sm text-slate-500 text-center py-8">No employees added yet.</p>`;
+          return;
+        }
+
+        listEl.innerHTML = `
+          <div class="overflow-x-auto rounded-lg border border-slate-700">
+            <table class="w-full">
+              <thead class="bg-slate-900/60">
+                <tr>
+                  <th class="py-3 px-4 text-left text-xs font-semibold text-slate-400 uppercase">Employee ID</th>
+                  <th class="py-3 px-4 text-left text-xs font-semibold text-slate-400 uppercase">Name</th>
+                  <th class="py-3 px-4 text-left text-xs font-semibold text-slate-400 uppercase">Role</th>
+                  <th class="py-3 px-4 text-left text-xs font-semibold text-slate-400 uppercase">Status</th>
+                  <th class="py-3 px-4 text-left text-xs font-semibold text-slate-400 uppercase">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${employees.map(e => `
+                  <tr class="border-b border-slate-800 last:border-0">
+                    <td class="py-3 px-4 text-sm text-slate-200">${e.employee_id}</td>
+                    <td class="py-3 px-4 text-sm text-slate-200">${e.name}</td>
+                    <td class="py-3 px-4">${roleBadge(e.role)}</td>
+                    <td class="py-3 px-4">${statusBadge(e.active)}</td>
+                    <td class="py-3 px-4">
+                      <button class="toggle-btn text-xs px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 transition"
+                        data-id="${e.employee_id}" data-name="${e.name}" data-role="${e.role}" data-active="${e.active}">
+                        ${e.active ? "Deactivate" : "Activate"}
+                      </button>
+                    </td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>`;
+
+        document.querySelectorAll(".toggle-btn").forEach(btn => {
+          btn.addEventListener("click", async function() {
+            const id = btn.dataset.id;
+            const name = btn.dataset.name;
+            const role = btn.dataset.role;
+            const currentlyActive = btn.dataset.active === "true";
+            btn.disabled = true;
+            btn.innerHTML = spinnerHTML();
+            await syncEmployee(id, name, role, !currentlyActive);
+            loadEmployees();
+          });
+        });
+      } catch (err) {
+        listEl.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-300 text-center">Failed to load employees. Check backend server.</div>`;
+      }
+    }
+
+    document.getElementById("addEmployeeForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const empId = document.getElementById("empId").value;
+      const empName = document.getElementById("empName").value;
+      const empRole = document.getElementById("empRole").value;
+      const addStatus = document.getElementById("addStatus");
+
+      addStatus.innerHTML = `<span class="flex items-center gap-1">${spinnerHTML()} Saving...</span>`;
+
+      try {
+        const response = await syncEmployee(empId, empName, empRole, true);
+        const data = await response.json();
+        if (data.success) {
+          addStatus.innerHTML = `<span class="text-emerald-400">Saved.</span>`;
+          document.getElementById("addEmployeeForm").reset();
+          loadEmployees();
+        } else {
+          addStatus.innerHTML = `<span class="text-red-400">Failed to save.</span>`;
+        }
+      } catch (err) {
+        addStatus.innerHTML = `<span class="text-red-400">Failed to save. Check backend server.</span>`;
+      }
+    });
+
+    loadEmployees();
+
+    setTimeout(() => {
+      document.querySelectorAll('.fade-up').forEach(el => el.style.opacity = '1');
+    }, 50);
+  </script>
+</body>
+</html>

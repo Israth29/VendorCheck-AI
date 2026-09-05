@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VendorCheck AI - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes spin360 {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+    @keyframes splashPopIn {
+      from { opacity: 0; transform: scale(0.6); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes splashFadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    #splashScreen {
+      opacity: 0;
+      animation: splashPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                 splashFadeOut 0.7s ease forwards 2.6s;
+    }
+    .splash-logo {
+      animation: spin360 2.2s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+      transform-style: preserve-3d;
+    }
+    @keyframes loginBoxIn {
+      from { opacity: 0; transform: translateY(25px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .login-box-anim {
+      animation: loginBoxIn 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+    .login-box-anim:hover {
+      transform: translateY(-6px) scale(1.015);
+    }
+    @keyframes walkAround {
+      0%   { left: 20%; transform: scaleX(1); }
+      45%  { left: 68%; transform: scaleX(1); }
+      50%  { left: 68%; transform: scaleX(-1); }
+      95%  { left: 20%; transform: scaleX(-1); }
+      100% { left: 20%; transform: scaleX(1); }
+    }
+    @keyframes bobUpDown {
+      0%, 100% { margin-top: 0px; }
+      50% { margin-top: -5px; }
+    }
+    .walking-character {
+      animation: walkAround 20s ease-in-out infinite, bobUpDown 0.6s ease-in-out infinite;
+    }
+    .leg-left, .leg-right {
+      transform-origin: center top;
+      animation: legSwing 0.6s ease-in-out infinite;
+    }
+    .leg-left { animation-delay: 0s; }
+    .leg-right { animation-delay: 0.3s; }
+    @keyframes legSwing {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
+    }
+    .mag-glass-walk {
+      animation: scanDown 1.8s ease-in-out infinite;
+      transform-origin: 72px 58px;
+    }
+    @keyframes scanDown {
+      0%, 100% { transform: rotate(25deg); }
+      50% { transform: rotate(45deg); }
+    }
+  </style>
+</head>
+<body class="m-0 h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans">
+
+  <div id="splashScreen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center" style="background: radial-gradient(circle at center, #16213e 0%, #0f172a 70%);">
+    <div class="splash-logo" style="filter: drop-shadow(0 0 30px rgba(37,99,235,0.5));">
+      <svg viewBox="0 0 100 100" width="180" height="180">
+        <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#2563eb"/>
+        <path d="M30 50 L45 65 L72 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1 class="text-white font-extrabold text-4xl mt-7 tracking-wide" style="text-shadow: 0 0 25px rgba(37,99,235,0.6);">VendorCheck AI</h1>
+    <p class="text-slate-400 mt-2 text-sm tracking-widest uppercase">Evidence-Based Verification</p>
+  </div>
+
+  <div class="walking-character fixed z-[3]" style="bottom:6%; left:20%;">
+    <svg viewBox="0 0 100 100" width="110" height="110">
+      <ellipse cx="50" cy="60" rx="28" ry="26" fill="#3b82f6"/>
+      <ellipse cx="50" cy="66" rx="16" ry="14" fill="#dbeafe"/>
+      <circle cx="40" cy="52" r="8" fill="white"/>
+      <circle cx="60" cy="52" r="8" fill="white"/>
+      <circle cx="41" cy="53" r="3.5" fill="#1e293b"/>
+      <circle cx="61" cy="53" r="3.5" fill="#1e293b"/>
+      <path d="M42 68 Q50 74 58 68" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="30" cy="34" r="8" fill="#3b82f6"/>
+      <circle cx="70" cy="34" r="8" fill="#3b82f6"/>
+      <circle cx="30" cy="34" r="4" fill="#dbeafe"/>
+      <circle cx="70" cy="34" r="4" fill="#dbeafe"/>
+      <g class="mag-glass-walk">
+        <line x1="72" y1="58" x2="82" y2="80" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="88" cy="90" r="10" fill="none" stroke="#fbbf24" stroke-width="4"/>
+        <line x1="80" y1="83" x2="73" y2="76" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <line x1="28" y1="58" x2="18" y2="66" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+      <ellipse class="leg-left" cx="40" cy="88" rx="7" ry="6" fill="#1e40af"/>
+      <ellipse class="leg-right" cx="60" cy="88" rx="7" ry="6" fill="#1e40af"/>
+    </svg>
+  </div>
+
+  <div id="loginBox" class="login-box-anim hidden relative z-[2] w-80 rounded-2xl p-10 text-center text-white border border-slate-500/20 bg-slate-800/75 backdrop-blur-md" style="box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(37,99,235,0.08);">
+    <div class="flex justify-center mb-3" style="filter: drop-shadow(0 0 12px rgba(37,99,235,0.5));">
+      <svg viewBox="0 0 100 100" width="50" height="50">
+        <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#2563eb"/>
+        <path d="M30 50 L45 65 L72 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-bold mb-1">Welcome to VendorCheck AI</h2>
+    <p class="text-slate-400 text-xs mb-5">Sign in to continue</p>
+    <form id="loginForm" class="space-y-2">
+      <input type="text" id="employeeId" placeholder="Employee ID" required
+        class="w-full px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:bg-slate-900/90 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      <input type="text" id="employeeName" placeholder="Full Name" required
+        class="w-full px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:bg-slate-900/90 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      <input type="text" id="companyCode" placeholder="Company Code" required
+        class="w-full px-4 py-3 rounded-lg bg-slate-900/60 text-white placeholder-slate-500 border border-transparent focus:border-blue-600 focus:bg-slate-900/90 focus:outline-none focus:ring-4 focus:ring-blue-600/15 transition">
+      <button type="submit"
+        class="w-full py-3 mt-2 rounded-lg font-semibold tracking-wide bg-gradient-to-br from-blue-600 to-blue-700 hover:-translate-y-0.5 active:scale-95 transition shadow-lg shadow-blue-600/30 hover:shadow-blue-600/45">
+        Login
+      </button>
+    </form>
+    <p id="errorMsg" class="text-red-400 text-xs mt-2 min-h-[16px]"></p>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    setTimeout(function() {
+      document.getElementById("splashScreen").style.display = "none";
+      document.getElementById("loginBox").classList.remove("hidden");
+    }, 3000);
+  </script>
+</body>
+</html>

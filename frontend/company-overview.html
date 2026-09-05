@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Company & Employee Overview - VendorCheck AI Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.45s ease forwards; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner { animation: spin 0.8s linear infinite; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 font-sans text-white flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-screen">
+    <div class="px-6 py-7 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <svg viewBox="0 0 100 100" width="34" height="34">
+          <path d="M50 5 L90 20 L90 50 Q90 80 50 95 Q10 80 10 50 L10 20 Z" fill="#f59e0b"/>
+          <path d="M30 50 L45 65 L72 35" stroke="#0f172a" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <p class="font-bold text-base leading-tight">VendorCheck AI</p>
+          <p class="text-[11px] text-amber-400 font-semibold tracking-widest uppercase leading-tight">Internal Admin</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-4 py-6 space-y-1">
+      <a href="company-overview.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-800 text-white text-sm font-medium">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        Companies &amp; Employees
+      </a>
+      <a href="activity-log.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white text-sm font-medium transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Activity Log
+      </a>
+    </nav>
+
+    <div class="px-6 py-5 border-t border-slate-800">
+      <p class="text-[11px] text-slate-500 leading-relaxed">Internal tool — not accessible from client dashboards.</p>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="ml-64 flex-1">
+    <header class="bg-slate-900/60 backdrop-blur-md border-b border-slate-800 px-10 py-6 sticky top-0 z-40">
+      <h1 class="text-2xl font-bold">Companies &amp; Employees</h1>
+      <p class="text-sm text-slate-400 mt-1">Live directory synced from each company's webhook integration</p>
+    </header>
+
+    <main class="px-10 py-8 max-w-[1300px]">
+      <!-- Stats -->
+      <div id="statsRow" class="grid grid-cols-4 gap-5 mb-8"></div>
+
+      <div id="content">
+        <div class="flex items-center justify-center py-24 text-slate-500 gap-2">
+          <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
+          <span>Loading companies...</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function statCard(label, value, colorClass) {
+      return `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</p>
+          <p class="text-3xl font-bold ${colorClass}">${value}</p>
+        </div>`;
+    }
+
+    function statusBadge(active) {
+      return active
+        ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Active</span>`
+        : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>Inactive</span>`;
+    }
+
+    function roleBadge(roleName) {
+      const isHr = roleName === "hr";
+      return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${isHr ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'}">${isHr ? 'HR' : 'Procurement'}</span>`;
+    }
+
+    function initials(name) {
+      return (name || "?").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+    }
+
+    function companyCardHTML(company, index) {
+      const employees = company.employees || [];
+      const activeCount = employees.filter(e => e.active).length;
+
+      const rows = employees.length
+        ? employees.map(e => `
+            <tr class="border-b border-slate-800/70 last:border-0 hover:bg-slate-800/30 transition">
+              <td class="py-3.5 px-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300">${initials(e.name)}</div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-100">${e.name}</p>
+                    <p class="text-xs text-slate-500">${e.employee_id}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5">${roleBadge(e.role)}</td>
+              <td class="py-3.5 px-5">${statusBadge(e.active)}</td>
+            </tr>`).join("")
+        : `<tr><td colspan="3" class="py-8 text-center text-sm text-slate-500">No employees registered yet.</td></tr>`;
+
+      return `
+        <div class="fade-up bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mb-6" style="animation-delay: ${index * 0.06}s; opacity:0;">
+          <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/80">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm">
+                ${initials(company.company_name)}
+              </div>
+              <div>
+                <h2 class="font-semibold text-base">${company.company_name}</h2>
+                <p class="text-xs text-slate-500 font-mono">${company.company_code}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+              <span class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">${activeCount} active</span>
+              <span class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">${employees.length} total</span>
+            </div>
+          </div>
+          <table class="w-full">
+            <thead>
+              <tr class="text-left">
+                <th class="py-2.5 px-5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Employee</th>
+                <th class="py-2.5 px-5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Role</th>
+                <th class="py-2.5 px-5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    async function loadOverview() {
+      const content = document.getElementById("content");
+      const statsRow = document.getElementById("statsRow");
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/companies-overview");
+        const data = await response.json();
+        const companies = data.companies || [];
+
+        const allEmployees = companies.flatMap(c => c.employees || []);
+        const activeTotal = allEmployees.filter(e => e.active).length;
+        const hrTotal = allEmployees.filter(e => e.role === "hr").length;
+        const procTotal = allEmployees.filter(e => e.role === "procurement").length;
+
+        statsRow.innerHTML = [
+          statCard("Companies", companies.length, "text-white"),
+          statCard("Total Employees", allEmployees.length, "text-white"),
+          statCard("Active", activeTotal, "text-emerald-400"),
+          statCard("HR / Procurement", `${hrTotal} / ${procTotal}`, "text-amber-400"),
+        ].join("");
+
+        if (companies.length === 0) {
+          content.innerHTML = `<div class="text-center py-24 text-slate-500">No companies registered yet.</div>`;
+          return;
+        }
+
+        content.innerHTML = companies.map((c, i) => companyCardHTML(c, i)).join("");
+        setTimeout(() => {
+          document.querySelectorAll('.fade-up').forEach(el => el.style.opacity = '1');
+        }, 50);
+      } catch (err) {
+        content.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-sm text-red-300 text-center">Failed to load companies. Check backend server.</div>`;
+      }
+    }
+
+    loadOverview();
+  </script>
+</body>
+</html>

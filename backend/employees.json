@@ -1,0 +1,16 @@
+[
+  {
+    "employee_id": "c223229",
+    "name": "Israth Jahan Worthy",
+    "company_code": "IIUC-229",
+    "role": "hr",
+    "active": true
+  },
+  {
+    "employee_id": "p001",
+    "name": "Test Procurement",
+    "company_code": "IIUC-229",
+    "role": "procurement",
+    "active": true
+  }
+]
