@@ -150,7 +150,7 @@
       const empName = localStorage.getItem("userName");
 
       try {
-        await fetch("http://127.0.0.1:8000/logout", {
+        await fetch("https://vendorcheck-ai.onrender.com/logout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ employee_id: empId, name: empName }),
@@ -200,7 +200,7 @@
       formData.append("file", file);
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/upload-supplier-doc?supplier_name=${encodeURIComponent(supplierName)}`, {
+        const response = await fetch(`https://vendorcheck-ai.onrender.com/upload-supplier-doc?supplier_name=${encodeURIComponent(supplierName)}`, {
           method: "POST",
           body: formData
         });
@@ -336,7 +336,7 @@
       resolveStatus.innerHTML = `<span class="flex items-center gap-1">${spinnerHTML()} Looking up contact emails...</span>`;
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/resolve-company-emails", {
+        const response = await fetch("https://vendorcheck-ai.onrender.com/api/v1/resolve-company-emails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ company_names: companyNames })
@@ -393,7 +393,7 @@
         sendStatus.innerHTML = `<span class="flex items-center gap-1">${spinnerHTML()} Sending...</span>`;
 
         try {
-          const response = await fetch("http://127.0.0.1:8000/send-verification-email", {
+          const response = await fetch("https://vendorcheck-ai.onrender.com/send-verification-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -433,7 +433,7 @@
       emailCard.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-16 text-slate-500">${spinnerHTML()}<p class="text-sm mt-2">Waiting for verification result...</p></div>`;
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/verify-claim?claim=${encodeURIComponent(claim)}&doc_type=supplier&requested_by=${encodeURIComponent(name)}`);
+        const response = await fetch(`https://vendorcheck-ai.onrender.com/verify-claim?claim=${encodeURIComponent(claim)}&doc_type=supplier&requested_by=${encodeURIComponent(name)}`);
         const data = await response.json();
 
         const statusLine = data.verification_result.split("\n")[0] || "";

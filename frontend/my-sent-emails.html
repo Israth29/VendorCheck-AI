@@ -111,7 +111,7 @@
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/my-sent-emails?employee_id=${encodeURIComponent(employeeId)}`);
+        const response = await fetch(`https://vendorcheck-ai.onrender.com/api/v1/my-sent-emails?employee_id=${encodeURIComponent(employeeId)}`);
         const data = await response.json();
         const threads = data.threads || [];
 

@@ -188,11 +188,11 @@
       const content = document.getElementById("content");
       try {
         // Login/logout history
-        const loginRes = await fetch("http://127.0.0.1:8000/api/v1/login-history");
+        const loginRes = await fetch("https://vendorcheck-ai.onrender.com/api/v1/login-history");
         const loginData = await loginRes.json();
 
         // Full audit log (includes verify_claim, send_verification_email, employee_sync)
-        const auditRes = await fetch("http://127.0.0.1:8000/audit-log");
+        const auditRes = await fetch("https://vendorcheck-ai.onrender.com/audit-log");
         const auditData = await auditRes.json();
 
         const verifyRecords = (auditData.records || []).filter(r => r.action === "verify_claim");
