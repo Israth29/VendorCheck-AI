@@ -18,7 +18,8 @@ from auth.security import hash_password, verify_password, generate_unique_compan
 from retrieval.vector_store import chunk_text, store_chunks_in_qdrant, retrieve_relevant_chunks
 from tools.ocr import extract_text_from_file
 from tools.email_sender import send_email
-from agents.verification_agent import generate_verification, resolve_recipient
+from agents.verification_agent import resolve_recipient
+from agents.orchestrator import run_verification_workflow
 
 app = FastAPI()
 
@@ -396,45 +397,18 @@ def search(query: str, doc_type: str = None):
 
 
 # ---------------------------------------------------------------------------
-# Evidence verification (RAG + web search + AI agent)
+# Evidence verification (multi-agent: Evidence Agent + Research Agent +
+# Verdict Agent, coordinated by the Verification Orchestrator)
 # ---------------------------------------------------------------------------
 
 @app.get("/verify-claim")
 def verify_claim(claim: str, doc_type: str = None, requested_by: str = "Unknown"):
-    results = retrieve_relevant_chunks(claim, doc_type)
+    result = run_verification_workflow(claim, doc_type=doc_type)
 
-    document_evidence = [
-        {
-            "text": r.payload.get("text"),
-            "score": r.score,
-            "filename": r.payload.get("filename"),
-            "source_name": r.payload.get("candidate") or r.payload.get("supplier")
-        }
-        for r in results
-    ]
+    document_evidence = result["document_evidence"]
+    web_evidence = result["web_evidence"]
+    verdict = result["verdict"]
 
-    # Build a more specific web search query using context from the document
-    # evidence so results are less likely to match an unrelated person/entity
-    # with the same name.
-    context_snippet = ""
-    identity_context = claim
-    if document_evidence:
-        context_snippet = document_evidence[0]["text"][:150]
-        identity_context = f"{claim} | Related document context: {context_snippet}"
-
-    subject_name = ""
-    if document_evidence and document_evidence[0]["text"]:
-        subject_name = document_evidence[0]["text"].split("\n")[0].strip()
-
-    if subject_name:
-        search_query = f'"{subject_name}" {claim}'.strip()
-    else:
-        search_query = f"{claim} {context_snippet}".strip()
-
-    from tools.web_search import web_search
-    web_evidence = web_search(search_query)
-
-    verdict = generate_verification(claim, document_evidence, web_evidence, identity_context)
     status_line = verdict.split("\n")[0] if verdict else "Unknown"
 
     source_files = list({d["filename"] for d in document_evidence if d.get("filename")})
