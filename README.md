@@ -56,24 +56,19 @@ Four agents, each with one job: an Evidence Agent (pulls document evidence via R
 ---
 
 ## 3. Architecture
-
+ IN the docs folder all the Workflow are given- 
+ 
 ### 3.1 Overall Application Flow
-
-![Application Flow](docs/architecture.png)
 
 Login checks the employee against their company code and role, then sends them to either the HR or Procurement dashboard. Both roles get the same three-step workflow (upload, verify, email) plus a shared "My Sent Emails" history.
 
 ### 3.2 Feature-Level Structure
-
-![Feature Structure](docs/diagram2.png)
 
 - **Upload** — OCR (external) pulls text out of the file, which gets chunked and embedded (Gemini API, external) and stored in Qdrant (internal).
 - **Verify a Claim** — the Orchestrator hands the claim to three agents: Evidence Agent (internal, reads from Qdrant), Research Agent (external, Tavily search), and Verdict Agent (external, Gemini reasoning). The result gets written to the audit log.
 - **Verification Email** — the Recipient Agent checks the internal company database first, and falls back to a web search + AI extraction if the company isn't registered. The officer confirms before anything is sent through Resend.
 
 ### 3.3 Company & Admin Side
-
-![Company and Admin Structure](docs/diagram3.png)
 
 Company passwords are hashed with PBKDF2 (`auth/security.py`) and only the hash gets stored in `companies.json`. Login re-hashes whatever was typed and compares it to the stored hash — the plaintext password is never saved or logged anywhere. A password-reset flow is sketched out in the diagram above but isn't built yet (see [Known Limitations](#12-known-limitations--future-work)).
 
