@@ -165,27 +165,13 @@ These aren't three separate, disconnected demos. The document indexed in step on
 
 ## 5. Screenshots
 
-_Add screenshots below — see the "Screenshots to add" checklist at the end of this file for exactly which ones._
+All Screenshots are added to the Screenshot Folders 
 
 ### Login & Dashboard
-`docs/screenshots/login.png`
-`docs/screenshots/hr-dashboard.png`
-
 ### Document Upload
-`docs/screenshots/upload-cv.png`
-
 ### Claim Verification
-`docs/screenshots/verify-claim-supported.png`
-`docs/screenshots/verify-claim-not-verified.png`
-
 ### Verification Email
-`docs/screenshots/resolve-email.png`
-`docs/screenshots/send-email.png`
-
 ### Company Portal / Admin
-`docs/screenshots/company-register.png`
-`docs/screenshots/company-overview.png`
-
 ---
 
 ## 6. Key Technical Decisions
