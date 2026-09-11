@@ -8,7 +8,7 @@ VendorCheck AI is a verification platform for HR and Procurement teams. It check
 
 **Youtube Link:** https://youtu.be/BdllEp0zKkA
 
-**Registration Companey:** https://vendorcheck-ai-1.onrender.com/company-register.html
+**Registration Company:** https://vendorcheck-ai-1.onrender.com/company-register.html
 
 **Admin:** https://vendorcheck-ai-1.onrender.com/company-overview.html
 
