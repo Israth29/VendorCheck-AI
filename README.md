@@ -189,7 +189,7 @@ There are two layers of validation working together, and the screenshot below sh
 
 **Browser-level (frontend):** required fields use plain HTML `required`, so trying to submit an empty claim, for example, gets caught immediately with a native browser message — before any request even reaches the backend.
 
-`docs/screenshots/error-handling-frontend.png`
+`Screenshots/error-handling-frontend.png`
 
 **API-level (backend):** the same check exists again on the server, independent of the frontend, because the frontend validation can always be bypassed (e.g. hitting the URL directly). For example, calling `/verify-claim` with an empty `claim` parameter directly returns:
 ```json
